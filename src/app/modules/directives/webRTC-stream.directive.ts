@@ -24,11 +24,10 @@ export class HTMLVideoDirective {
     constructor(elRef: ElementRef) {
         this.element = elRef.nativeElement;
     }
-
 }
 
 /**
- * Camera configuration for WebRTC
+ * Camera configuration for WebRTCStreamDirective
  */
 export interface WebRTCStreamConfig {
     video: boolean;
@@ -50,9 +49,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
     // TODO: verify lifeCycle of Directive and remove it
     private mediaStream: Observable<MediaStream>;
 
-    constructor(
-        elRef: ElementRef
-    ) {
+    constructor(elRef: ElementRef) {
         super(elRef);
     }
 
