@@ -23,6 +23,10 @@ export class AppComponent implements AfterViewInit {
     this.webRTCStream.pause();
   }
 
+  public stop(): void {
+    this.webRTCStream.stop();
+  }
+
   public take(): void {
     const pic = this.webRTCStream.take();
     console.log(pic);
