@@ -45,6 +45,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
     public webRTCStream: WebRTCStreamConfig;
 
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
+    private readonly document: Document = document;
 
     // TODO: verify lifeCycle of Directive and remove it
     private mediaStream: Observable<MediaStream>;
@@ -55,7 +56,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
         super(elRef);
     }
 
-    // TODO: loading & perm-error
+    // TODO: loading & perm-error & return stream??
     public start(): void {
         if (!this.mediaStream) {
             this.mediaStream = this.userMediaObs(this.webRTCStream);
@@ -71,14 +72,24 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
     // TODO: check if it is playing
     public pause(): void {
         this.element.pause();
-        this.element.srcObject = null;
     }
 
-    // TODO: return the pic
-    public take(): void {
+    // TODO: stop and remove everything
+    public stop(): void {
 
     }
 
+    // TODO: destroy canvas & improve code && check zone
+    public take(width: number = 1024, height: number = 768): string {
+        const canvas: HTMLCanvasElement = this.document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context: CanvasRenderingContext2D = canvas.getContext('2d');
+        context.drawImage(this.element, 0, 0, width, height);
+        return canvas.toDataURL('image/png');
+    }
+
+    // TODO: start & stop? check zone & return stream??
     public record(): void {
 
     }

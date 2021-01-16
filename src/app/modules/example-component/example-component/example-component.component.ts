@@ -24,7 +24,8 @@ export class ExampleComponentComponent implements AfterViewInit {
   }
 
   public take(): void {
-    this.webRTCStream.take();
+    const pic = this.webRTCStream.take();
+    console.log(pic);
   }
 
   public record(): void {
