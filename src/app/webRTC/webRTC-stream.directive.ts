@@ -2,16 +2,21 @@ import { AfterViewInit, Directive, ElementRef, EventEmitter, Input, Output } fro
 import { from, Observable } from 'rxjs';
 
 /**
- * Wraps access to HTMLVideoElement, exposing typed native element
+ * Wraps access to [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement),
+ * exposing typed native element for:
  *
- * component.html:
+ * ```html
  *   <video></video>
+ * ```
  *
- * component.ts:
- *   @ViewChild(HTMLVideoDirective)
+ * in your component.ts
+ *
+ * ```ts
+ *   ViewChild(HTMLVideoDirective)
  *   public htmlVideo: HTMLVideoDirective;
  *
  *   this.htmlVideo.element; // access to the element
+ * ```
  */
 @Directive({
     selector: 'video'
@@ -25,19 +30,41 @@ export class HTMLVideoDirective {
     }
 }
 
-// TODO: debug play, stop, pause
-// TODO: debug take
-// TODO: check if the output makes sense
+/**
+ * Wraps [webRTC MediaDevices](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
+ * and plays camera content directly on html's video tag allowing to use native functionality like autoplay 
+ * attribute to initilize it:
+ *
+ * ```html
+ *   <video webRTCStream></video>
+ * ```
+ *
+ * or:
+ *
+ * ```html
+ *   <video autoplay webRTCStream></video>
+ * ```
+ *
+ * in your component.ts
+ *
+ * ```ts
+ *   ViewChild(WebRTCStreamDirective)
+ *   public webRTCStream: WebRTCStreamDirective;
+ *
+ *   this.webRTCStream.play(); // play video from camera
+ *   this.webRTCStream.pause(); // pause video
+ * ```
+ */
 @Directive({
     selector: 'video[webRTCStream]'
 })
 export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterViewInit {
 
+    /**
+     * Config is using [MediaStreamConstraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints)
+     */
     @Input()
     public webRTCStream: MediaStreamConstraints;
-
-    @Input()
-    public autoPlay: boolean;
 
     @Output()
     public mediaStream: EventEmitter<MediaStream> = new EventEmitter();
@@ -58,6 +85,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
 
     public play(): void {
         if (!this.mStream) {
+            // No need to cancel subscription because when finish it's also completed
             this.userMediaObs(this.webRTCStream).subscribe(stream => { // TODO: verify obs completed and add note
                 this.mStream = stream;
                 this.mediaStream.emit(stream);
@@ -75,13 +103,18 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
         this.element.pause();
     }
 
-    public stop(): void {
+    public stop(): void { // TODO: not stops camera - review how to stop stream
         this.mStream = null;
         this.mediaStream.emit(null);
         this.element.pause();
         this.element.srcObject = null;
     }
 
+    /**
+     * Take pictures from the displaying video
+     * @param config mixing of [toDataURL()](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL)
+     * and [drawImage()](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+     */
     public take(config?: {
         width?: number,
         height?: number,
@@ -107,3 +140,9 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
         }));
     }
 }
+
+
+    // TODO: debug play, stop, pause
+    // TODO: check perm change
+    // TODO: debug take - verify
+    // TODO: check if the output makes sense!
