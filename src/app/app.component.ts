@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { WebRTCStreamDirective } from './webRTC/webRTC-stream.directive';
 
 @Component({
@@ -6,26 +6,12 @@ import { WebRTCStreamDirective } from './webRTC/webRTC-stream.directive';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent {
 
   @ViewChild(WebRTCStreamDirective)
   public webRTCStream: WebRTCStreamDirective;
 
   constructor() { }
-
-  ngAfterViewInit(): void { }
-
-  public start(): void {
-    this.webRTCStream.start();
-  }
-
-  public pause(): void {
-    this.webRTCStream.pause();
-  }
-
-  public stop(): void {
-    this.webRTCStream.stop();
-  }
 
   public take(): void {
     const pic = this.webRTCStream.take();
