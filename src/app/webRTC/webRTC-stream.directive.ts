@@ -34,6 +34,7 @@ export interface WebRTCStreamConfig {
     audio: boolean;
 }
 
+// TODO: verify ready
 @Directive({
     selector: 'video[webRTCStream]'
 })
