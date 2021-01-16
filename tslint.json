@@ -25,6 +25,7 @@
     "component-selector": [
       true,
       "element",
+      "e3",
       "app",
       "kebab-case"
     ],
