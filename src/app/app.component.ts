@@ -36,3 +36,6 @@ export class AppComponent implements AfterViewInit {
     this.webRTCStream.record();
   }
 }
+
+// TODO: add demo pic for take
+// TODO: add demo video player

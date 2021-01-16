@@ -2,17 +2,16 @@ import { Directive, ElementRef, Input } from '@angular/core';
 import { from, Observable } from 'rxjs';
 
 /**
- * This directive wrap the access to HTMLVideoElement
- * from a video tag exposing the native element
+ * Waps access to HTMLVideoElement, exposing typed native element
  *
  * component.html:
- * <video></video>
+ *   <video></video>
  *
  * component.ts:
- * @ViewChild(HTMLVideoDirective)
- * public htmlVideo: HTMLVideoDirective;
+ *   @ViewChild(HTMLVideoDirective)
+ *   public htmlVideo: HTMLVideoDirective;
  *
- * this.htmlVideo.element;
+ *   this.htmlVideo.element; // access to the element
  */
 @Directive({
     selector: 'video'
@@ -26,14 +25,6 @@ export class HTMLVideoDirective {
     }
 }
 
-/**
- * Camera configuration for WebRTCStreamDirective
- */
-export interface WebRTCStreamConfig {
-    video: boolean;
-    audio: boolean;
-}
-
 // TODO: verify ready
 @Directive({
     selector: 'video[webRTCStream]'
@@ -42,7 +33,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
 
     // TODO: prepare for changes and reload camera
     @Input()
-    public webRTCStream: WebRTCStreamConfig;
+    public webRTCStream: MediaStreamConstraints;
 
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
     private readonly document: Document = document;
@@ -77,13 +68,12 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
 
     }
 
-    // TODO: destroy canvas & improve code && check zone
+    // TODO: destroy canvas & improve code && check zone && define a type??
     public take(width: number = 1024, height: number = 768): string {
         const canvas: HTMLCanvasElement = this.document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        const context: CanvasRenderingContext2D = canvas.getContext('2d');
-        context.drawImage(this.element, 0, 0, width, height);
+        canvas.getContext('2d').drawImage(this.element, 0, 0, width, height);
         return canvas.toDataURL('image/png');
     }
 
@@ -92,13 +82,10 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
 
     }
 
-    private userMediaObs(config: WebRTCStreamConfig): Observable<MediaStream> {
-        return from(
-            this.mediaDevices.getUserMedia({
-                ...{ video: true, audio: false },
-                ...config
-            })
-        );
+    private userMediaObs(config: MediaStreamConstraints): Observable<MediaStream> {
+        return from(this.mediaDevices.getUserMedia({
+            ...{ video: true, audio: false },
+            ...config
+        }));
     }
-
 }
