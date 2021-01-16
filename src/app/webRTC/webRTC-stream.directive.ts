@@ -1,8 +1,8 @@
-import { Directive, ElementRef, Input } from '@angular/core';
-import { from, Observable } from 'rxjs';
+import { Directive, ElementRef, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { from, Observable, Subscription } from 'rxjs';
 
 /**
- * Waps access to HTMLVideoElement, exposing typed native element
+ * Wraps access to HTMLVideoElement, exposing typed native element
  *
  * component.html:
  *   <video></video>
@@ -25,56 +25,76 @@ export class HTMLVideoDirective {
     }
 }
 
-// TODO: verify ready
+// TODO: debug play, stop, pause
+// TODO: check zone
+// TODO: check if the output makes sense
 @Directive({
     selector: 'video[webRTCStream]'
 })
-export class WebRTCStreamDirective extends HTMLVideoDirective {
+export class WebRTCStreamDirective extends HTMLVideoDirective implements OnDestroy {
 
-    // TODO: prepare for changes and reload camera
     @Input()
     public webRTCStream: MediaStreamConstraints;
 
+    @Input()
+    public autoPlay: boolean;
+
+    @Output()
+    public mediaStream: EventEmitter<MediaStream> = new EventEmitter();
+
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
     private readonly document: Document = document;
-
-    // TODO: verify lifeCycle of Directive and remove it
-    private mediaStream: Observable<MediaStream>;
+    private mediaStreamSubs: Subscription;
 
     constructor(elRef: ElementRef) {
         super(elRef);
     }
 
-    // TODO: loading & perm-error & return stream??
-    public start(): void {
-        if (!this.mediaStream) {
-            this.mediaStream = this.userMediaObs(this.webRTCStream);
-        }
-        // TODO: be careful with multiple subscriptions
-        this.mediaStream
-            .subscribe(stream => {
-                this.element.srcObject = stream;
-                this.element.play();
-            });
+    ngOnDestroy(): void {
+        this.stop();
     }
 
-    // TODO: check if it is playing
+    public play(): void {
+        if (!this.mediaStreamSubs) {
+            this.mediaStreamSubs = this.userMediaObs(this.webRTCStream).subscribe(stream => {
+                this.element.srcObject = stream;
+                this.mediaStream.emit(stream);
+                this.element.play();
+            });
+        }
+        if (this.element.paused) {
+            this.element.play();
+        }
+    }
+
     public pause(): void {
+        if (!this.mediaStreamSubs || !this.element.played) {
+            return;
+        }
         this.element.pause();
     }
 
-    // TODO: stop and remove everything
     public stop(): void {
-
+        if (!this.mediaStreamSubs) {
+            return;
+        }
+        this.mediaStreamSubs.unsubscribe();
+        this.mediaStreamSubs = null;
+        this.element.pause();
+        this.element.srcObject = null;
     }
 
-    // TODO: destroy canvas & improve code && check zone && define a type??
-    public take(width: number = 1024, height: number = 768): string {
+    public take(config?: {
+        width?: number,
+        height?: number,
+        type?: string,
+        encoderOptions?: number
+    }): string {
         const canvas: HTMLCanvasElement = this.document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(this.element, 0, 0, width, height);
-        return canvas.toDataURL('image/png');
+        canvas.width = config?.width || 1024;
+        canvas.height = config?.height || 768;
+        canvas.getContext('2d').drawImage(this.element, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL(config?.type, config?.encoderOptions);
     }
 
     // TODO: start & stop? check zone & return stream??
