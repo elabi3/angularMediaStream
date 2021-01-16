@@ -1,5 +1,5 @@
-import { Directive, ElementRef, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
-import { from, Observable, Subscription } from 'rxjs';
+import { AfterViewInit, Directive, ElementRef, EventEmitter, Input, Output } from '@angular/core';
+import { from, Observable } from 'rxjs';
 
 /**
  * Wraps access to HTMLVideoElement, exposing typed native element
@@ -26,12 +26,12 @@ export class HTMLVideoDirective {
 }
 
 // TODO: debug play, stop, pause
-// TODO: check zone
+// TODO: debug take
 // TODO: check if the output makes sense
 @Directive({
     selector: 'video[webRTCStream]'
 })
-export class WebRTCStreamDirective extends HTMLVideoDirective implements OnDestroy {
+export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterViewInit {
 
     @Input()
     public webRTCStream: MediaStreamConstraints;
@@ -44,42 +44,40 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements OnDestr
 
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
     private readonly document: Document = document;
-    private mediaStreamSubs: Subscription;
+    private mStream: MediaStream;
 
     constructor(elRef: ElementRef) {
         super(elRef);
     }
 
-    ngOnDestroy(): void {
-        this.stop();
+    ngAfterViewInit(): void {
+        if (this.element.autoplay) {
+            this.play();
+        }
     }
 
     public play(): void {
-        if (!this.mediaStreamSubs) {
-            this.mediaStreamSubs = this.userMediaObs(this.webRTCStream).subscribe(stream => {
-                this.element.srcObject = stream;
+        if (!this.mStream) {
+            this.userMediaObs(this.webRTCStream).subscribe(stream => { // TODO: verify obs completed and add note
+                this.mStream = stream;
                 this.mediaStream.emit(stream);
-                this.element.play();
+                this.play();
             });
+            return;
         }
-        if (this.element.paused) {
-            this.element.play();
+        if (!this.element.srcObject) {
+            this.element.srcObject = this.mStream;
         }
+        this.element.play();
     }
 
     public pause(): void {
-        if (!this.mediaStreamSubs || !this.element.played) {
-            return;
-        }
         this.element.pause();
     }
 
     public stop(): void {
-        if (!this.mediaStreamSubs) {
-            return;
-        }
-        this.mediaStreamSubs.unsubscribe();
-        this.mediaStreamSubs = null;
+        this.mStream = null;
+        this.mediaStream.emit(null);
         this.element.pause();
         this.element.srcObject = null;
     }
@@ -97,7 +95,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements OnDestr
         return canvas.toDataURL(config?.type, config?.encoderOptions);
     }
 
-    // TODO: start & stop? check zone & return stream??
+    // TODO: start & stop? check zone & return bytes or stream??
     public record(): void {
 
     }

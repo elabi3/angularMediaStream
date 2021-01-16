@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { WebRTCStreamDirective } from './webRTC/webRTC-stream.directive';
 
 @Component({
@@ -11,17 +11,13 @@ export class AppComponent {
   @ViewChild(WebRTCStreamDirective)
   public webRTCStream: WebRTCStreamDirective;
 
-  constructor() { }
+  public picSrc: string;
 
-  public take(): void {
-    const pic = this.webRTCStream.take();
-    console.log(pic);
-  }
+  constructor() { }
 
   public record(): void {
     this.webRTCStream.record();
   }
 }
 
-// TODO: add demo pic for take
 // TODO: add demo video player
