@@ -40,10 +40,14 @@ export interface WebRTCStreamConfig {
 })
 export class WebRTCStreamDirective extends HTMLVideoDirective {
 
+    // TODO: prepare for changes and reload camera
     @Input()
     public webRTCStream: WebRTCStreamConfig;
 
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
+
+    // TODO: verify lifeCycle of Directive and remove it
+    private mediaStream: Observable<MediaStream>;
 
     constructor(
         elRef: ElementRef
@@ -53,7 +57,11 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
 
     // TODO: loading & perm-error
     public start(): void {
-        this.userMediaObs(this.webRTCStream)
+        if (!this.mediaStream) {
+            this.mediaStream = this.userMediaObs(this.webRTCStream);
+        }
+        // TODO: be careful with multiple subscriptions
+        this.mediaStream
             .subscribe(stream => {
                 this.element.srcObject = stream;
                 this.element.play();
@@ -63,8 +71,10 @@ export class WebRTCStreamDirective extends HTMLVideoDirective {
     // TODO: check if it is playing
     public pause(): void {
         this.element.pause();
+        this.element.srcObject = null;
     }
 
+    // TODO: return the pic
     public take(): void {
 
     }

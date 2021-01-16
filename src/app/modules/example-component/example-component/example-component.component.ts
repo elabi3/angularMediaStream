@@ -13,8 +13,21 @@ export class ExampleComponentComponent implements AfterViewInit {
 
   constructor() { }
 
-  ngAfterViewInit(): void {
+  ngAfterViewInit(): void { }
+
+  public start(): void {
     this.webRTCStream.start();
   }
 
+  public pause(): void {
+    this.webRTCStream.pause();
+  }
+
+  public take(): void {
+    this.webRTCStream.take();
+  }
+
+  public record(): void {
+    this.webRTCStream.record();
+  }
 }
