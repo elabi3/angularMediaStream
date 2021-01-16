@@ -19,6 +19,7 @@
     "directive-selector": [
       true,
       "attribute",
+      "e3",
       "app",
       "camelCase"
     ],

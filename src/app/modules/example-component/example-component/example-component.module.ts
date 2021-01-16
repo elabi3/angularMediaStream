@@ -1,17 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { ExampleComponentRoutingModule } from './example-component-routing.module';
 import { ExampleComponentComponent } from './example-component.component';
-import { CameraModule } from '../../camera/camera.module';
-
+import { WebRTCStreamModule } from '../../directives/webRTC-stream.module';
 
 @NgModule({
   declarations: [ExampleComponentComponent],
   imports: [
     CommonModule,
     ExampleComponentRoutingModule,
-    CameraModule
+    WebRTCStreamModule
   ]
 })
 export class ExampleComponentModule { }
