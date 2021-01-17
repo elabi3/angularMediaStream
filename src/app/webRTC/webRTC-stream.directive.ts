@@ -39,7 +39,7 @@ export class HTMLVideoDirective {
  *   <video webRTCStream></video>
  * ```
  *
- * or:
+ * or
  *
  * ```html
  *   <video autoplay webRTCStream></video>
@@ -135,6 +135,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
 
     private userMediaObs(config: MediaStreamConstraints): Observable<MediaStream> {
         return from(this.mediaDevices.getUserMedia({
+            // Default config in case nothing is provided
             ...{ video: true, audio: false },
             ...config
         }));
