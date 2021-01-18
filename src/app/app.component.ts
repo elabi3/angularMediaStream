@@ -15,9 +15,6 @@ export class AppComponent {
 
   constructor() { }
 
-  public record(): void {
-    this.webRTCStream.record();
-  }
 }
 
 // TODO: add demo video player
