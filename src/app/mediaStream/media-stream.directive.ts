@@ -1,6 +1,5 @@
 import { AfterViewInit, Directive, ElementRef, EventEmitter, Input, Output } from '@angular/core';
 import { from, Observable } from 'rxjs';
-declare var MediaRecorder: any; // TODO: hack explain
 
 /**
  * Wraps access to [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement),
@@ -32,44 +31,47 @@ export class HTMLVideoDirective {
 }
 
 /**
- * Wraps [webRTC MediaDevices](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
- * and plays camera content directly on html's video tag allowing to use native functionality like autoplay 
+ * Wraps [MediaDevices](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
+ * and plays camera content directly on html's video tag allowing to use native functionality like autoplay
  * attribute to initilize it:
  *
  * ```html
- *   <video webRTCStream></video>
+ *   <video mediaStream></video>
  * ```
  *
  * or
  *
  * ```html
- *   <video autoplay webRTCStream></video>
+ *   <video autoplay mediaStream></video>
  * ```
  *
  * in your component.ts
  *
  * ```ts
- *   ViewChild(WebRTCStreamDirective)
- *   public webRTCStream: WebRTCStreamDirective;
+ *   ViewChild(MediaStreamDirective)
+ *   public mediaStream: MediaStreamDirective;
  *
- *   this.webRTCStream.play(); // play video from camera
- *   this.webRTCStream.pause(); // pause video
+ *   this.mediaStream.play(); // play video from camera
+ *   this.mediaStream.pause(); // pause video
  * ```
  */
 @Directive({
-    selector: 'video[webRTCStream]'
+    selector: 'video[mediaStream]'
 })
-export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterViewInit {
+export class MediaStreamDirective extends HTMLVideoDirective implements AfterViewInit {
 
     /**
-     * Config is using [MediaStreamConstraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints)
+     * mediaStream config is using [MediaStreamConstraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints)
      */
     @Input()
-    public webRTCStream: MediaStreamConstraints;
+    public mediaStream: MediaStreamConstraints;
+
+    @Output()
+    public videoRecorded: EventEmitter<[Blob, ArrayBuffer]> = new EventEmitter();
 
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
     private readonly document: Document = document;
-    private mediaRecorder: any;
+    private mediaRecorder: MediaRecorder;
     private mStream: MediaStream;
 
     constructor(elRef: ElementRef) {
@@ -85,7 +87,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
     public play(): void {
         if (!this.mStream) {
             // No need to cancel subscription because when finish it's also completed
-            this.userMediaObs(this.webRTCStream).subscribe(stream => { // TODO: verify obs completed and add note
+            this.userMediaObs(this.mediaStream).subscribe(stream => { // TODO: verify obs completed and add note
                 this.mStream = stream;
                 this.play();
             });
@@ -102,6 +104,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
     }
 
     public stop(): void {
+        // Stop camera devices streaming
         this.mStream.getTracks().forEach(track => track.stop());
         this.mStream = null;
         this.element.pause();
@@ -126,17 +129,28 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
         return canvas.toDataURL(config?.type, config?.encoderOptions);
     }
 
-    // TODO: review how to throw error or verify is MediaRecorder is availble - probably expose a method that checks
+    /**
+     * This meethod is using a couple of native APIs:
+     *
+     * (MediaRecorder)[https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder]
+     * (FileReader)[https://developer.mozilla.org/en-US/docs/Web/API/FileReader]
+     */
     public recordStart(): void {
         if (this.mediaRecorder) {
             return;
         }
         this.mediaRecorder = new MediaRecorder(this.mStream);
-        this.mediaRecorder.ondataavailable = (event) => {
+        this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
             const blob = event.data;
-            if (blob.size > 0) {
-                // emit data as an array?? using an eventEmitter
+            if (blob?.size <= 0) {
+                return;
             }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                // The contents of the BLOB are in reader.result:
+                this.videoRecorded.emit([blob, reader.result as ArrayBuffer]);
+            };
+            reader.readAsArrayBuffer(blob);
         };
         this.mediaRecorder.start();
     }
@@ -145,7 +159,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
         if (!this.mediaRecorder) {
             return;
         }
-        this.mediaRecorder.stop();
+        this.mediaRecorder.stop(); // Fires ondataavailable's event
     }
 
     private userMediaObs(config: MediaStreamConstraints): Observable<MediaStream> {
@@ -157,7 +171,7 @@ export class WebRTCStreamDirective extends HTMLVideoDirective implements AfterVi
     }
 }
 
-    // TODO: change name from webRTCStream to MediaStream
     // TODO: debug play, stop, pause
     // TODO: check perm change
     // TODO: debug take - verify
+    // TODO: review how to throw error or verify is MediaRecorder is availble - probably expose a method that checks

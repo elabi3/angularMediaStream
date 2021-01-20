@@ -1,5 +1,5 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { WebRTCStreamDirective } from './webRTC/webRTC-stream.directive';
+import { Component, ViewChild } from '@angular/core';
+import { MediaStreamDirective } from './mediaStream/media-stream.directive';
 
 @Component({
   selector: 'app-root',
@@ -8,14 +8,18 @@ import { WebRTCStreamDirective } from './webRTC/webRTC-stream.directive';
 })
 export class AppComponent {
 
-  @ViewChild(WebRTCStreamDirective)
-  public webRTCStream: WebRTCStreamDirective;
+  @ViewChild(MediaStreamDirective)
+  public mediaStream: MediaStreamDirective;
 
   public picSrc: string;
 
   constructor() { }
 
+  public onVideo(data: [Blob, ArrayBuffer]) {
+    console.log(data);
+  }
+
 }
 
 // TODO: add demo video player
-// TODO: update to a10
+// TODO: update to a11

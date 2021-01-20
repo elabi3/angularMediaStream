@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
-import { WebRTCStreamModule } from './webRTC/webRTC-stream.module';
+import { MediaStreamModule } from './mediaStream/media-stream.module';
 
 @NgModule({
   declarations: [
@@ -9,7 +9,7 @@ import { WebRTCStreamModule } from './webRTC/webRTC-stream.module';
   ],
   imports: [
     BrowserModule,
-    WebRTCStreamModule
+    MediaStreamModule
   ],
   providers: [],
   bootstrap: [AppComponent]

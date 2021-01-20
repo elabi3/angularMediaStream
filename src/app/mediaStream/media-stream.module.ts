@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WebRTCStreamDirective } from './webRTC-stream.directive';
+import { MediaStreamDirective } from './media-stream.directive';
 
 @NgModule({
     declarations: [
-        WebRTCStreamDirective
+        MediaStreamDirective
     ],
     imports: [
         CommonModule
     ],
-    exports: [WebRTCStreamDirective]
+    exports: [MediaStreamDirective]
 })
-export class WebRTCStreamModule { }
+export class MediaStreamModule { }

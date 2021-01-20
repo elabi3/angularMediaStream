@@ -2,14 +2,14 @@
 
 <hr>
 <h2>Demo</h2>
-<video webRTCStream class="video-container">Video stream not available.</video>
+<video mediaStream (videoRecorded)="onVideo($event)" class="video-container">Video stream not available.</video>
 <div class="buttons-container">
-  <button (click)="webRTCStream.play()">Start</button>
-  <button (click)="webRTCStream.pause()">Pause</button>
-  <button (click)="webRTCStream.stop()">Stop</button>
-  <button (click)="picSrc = webRTCStream.take()">Take</button>
-  <button (click)="webRTCStream.recordStart()">Record Start</button>
-  <button (click)="webRTCStream.recordStop()">Record Stop</button>
+  <button (click)="mediaStream.play()">Start</button>
+  <button (click)="mediaStream.pause()">Pause</button>
+  <button (click)="mediaStream.stop()">Stop</button>
+  <button (click)="picSrc = mediaStream.take()">Take</button>
+  <button (click)="mediaStream.recordStart()">Record Start</button>
+  <button (click)="mediaStream.recordStop()">Record Stop</button>
 </div>
 
 <hr>
