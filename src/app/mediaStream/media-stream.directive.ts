@@ -135,11 +135,14 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
      * (MediaRecorder)[https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder]
      * (FileReader)[https://developer.mozilla.org/en-US/docs/Web/API/FileReader]
      */
-    public recordStart(): void {
+    public recordStart(): void | never {
         if (this.mediaRecorder) {
             return;
         }
+
+        // If API is not available this will throw an error
         this.mediaRecorder = new MediaRecorder(this.mStream);
+
         this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
             const blob = event.data;
             if (blob?.size <= 0) {
@@ -171,7 +174,5 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     }
 }
 
-    // TODO: debug play, stop, pause
     // TODO: check perm change
-    // TODO: debug take - verify
     // TODO: review how to throw error or verify is MediaRecorder is availble - probably expose a method that checks
