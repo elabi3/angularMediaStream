@@ -2,7 +2,7 @@
 
 <hr>
 <h2>Demo</h2>
-<video mediaStream (videoRecorded)="onVideo($event)" class="video-container">Video stream not available.</video>
+<video playsinline mediaStream (videoRecorded)="onVideo($event)" class="video-container">Video stream not available.</video>
 <div class="buttons-container">
   <button (click)="mediaStream.play()">Start</button>
   <button (click)="mediaStream.pause()">Pause</button>

@@ -22,4 +22,3 @@ export class AppComponent {
 }
 
 // TODO: add demo video player
-// TODO: publish demo as github pages
