@@ -123,8 +123,8 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
         encoderOptions?: number
     }): string {
         const canvas: HTMLCanvasElement = this.document.createElement('canvas');
-        canvas.width = config?.width || 1024;
-        canvas.height = config?.height || 768;
+        canvas.width = config?.width || this.element.offsetWidth;
+        canvas.height = config?.height || this.element.offsetHeight;
         canvas.getContext('2d').drawImage(this.element, 0, 0, canvas.width, canvas.height);
         return canvas.toDataURL(config?.type, config?.encoderOptions);
     }
@@ -173,6 +173,7 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
         }));
     }
 }
-
+     
+    // Expose mediaStream or make it public
     // TODO: check perm change
     // TODO: review how to throw error or verify is MediaRecorder is availble - probably expose a method that checks
