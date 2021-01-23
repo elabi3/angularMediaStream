@@ -23,3 +23,4 @@ export class AppComponent {
 
 // TODO: add demo video player
 // TODO: update to a11
+// TODO: publish demo as github pages
