@@ -2,9 +2,11 @@ import { AfterViewInit, Directive, ElementRef, EventEmitter, Input, Output } fro
 import { EMPTY, from, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+// Uncoment this line if you're not using @types/dom-mediacapture-record
+// declare const MediaRecorder: any;
+
 /**
- * Wraps access to [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement),
- * exposing typed native element for:
+ * Wraps access to [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) :
  *
  * ```html
  *   <video></video>
@@ -33,14 +35,13 @@ export class HTMLVideoDirective {
 
 /**
  * Wraps [MediaDevices](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
- * and plays camera content directly on html's video tag allowing to use native functionality like autoplay
- * attribute to initilize it:
+ * playing content in <video></video>:
  *
  * ```html
  *   <video mediaStream></video>
  * ```
  *
- * or
+ * usign autoplay
  *
  * ```html
  *   <video autoplay mediaStream></video>
@@ -53,7 +54,6 @@ export class HTMLVideoDirective {
  *   public mediaStream: MediaStreamDirective;
  *
  *   this.mediaStream.play(); // play video from camera
- *   this.mediaStream.pause(); // pause video
  * ```
  */
 @Directive({
@@ -97,7 +97,6 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
 
     public play(): void {
         if (!this.mediaStream) {
-            // No need to cancel subscription because when finish it's also completed
             this.userMediaObs(this.config)
                 .pipe(
                     catchError(err => {
@@ -105,10 +104,10 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
                         return EMPTY;
                     })
                 )
-                .subscribe(stream => {
+                .subscribe(stream => { // No need to cancel subscription because will complete
                     this.mediaStream = stream;
                     this.mediaStreamRef.emit(this.mediaStream);
-                    this.play();
+                    this.play(); // Recursive call to assing video stream
                 });
             return;
         }
@@ -123,11 +122,8 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     }
 
     public stop(): void {
-        if (!this.mediaStream) {
-            return;
-        }
         // Stop camera devices streaming
-        this.mediaStream.getTracks().forEach(track => track.stop());
+        this.mediaStream?.getTracks().forEach(track => track.stop());
         this.mediaStream = null;
         this.element.pause();
         this.element.srcObject = null;
@@ -188,7 +184,7 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
 
     private userMediaObs(config: MediaStreamConstraints): Observable<MediaStream> {
         return from(this.mediaDevices.getUserMedia({
-            ...{ video: true, audio: false }, // Default config in case nothing is provided
+            ...{ video: true, audio: false }, // Default config
             ...config
         }));
     }
