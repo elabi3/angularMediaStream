@@ -173,7 +173,7 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
         }));
     }
 }
-     
+
     // TODO: Expose mediaStream or make it public
     // TODO: expose errors from mediaStream and mediaRecorder (explain it well)
     // TODO: check perm change - debug what happend with media stream
