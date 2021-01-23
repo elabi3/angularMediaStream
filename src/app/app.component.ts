@@ -15,8 +15,20 @@ export class AppComponent {
 
   constructor() { }
 
-  public onVideo(data: [Blob, ArrayBuffer]) {
+  public record(): void {
+    this.mediaStream.recordStart();
+  }
+
+  public onVideo(data: [Blob, ArrayBuffer]): void {
     console.log(data);
+  }
+
+  public onError(err: DOMException | ReferenceError): void {
+    if (err instanceof DOMException) {
+      alert('Impossible to instanciate MediaStream' + err);
+    } else {
+      alert('Impossible to instanciate MediaRecorder' + err);
+    }
   }
 
 }

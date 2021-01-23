@@ -1,5 +1,6 @@
 import { AfterViewInit, Directive, ElementRef, EventEmitter, Input, Output } from '@angular/core';
-import { from, Observable } from 'rxjs';
+import { EMPTY, from, Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 /**
  * Wraps access to [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement),
@@ -45,6 +46,16 @@ export class HTMLVideoDirective {
  *   <video autoplay mediaStream></video>
  * ```
  *
+ * or
+ *
+ * ```html
+ *  <video
+ *   [mediaStream]="{video: true}"
+ *   (intitError)="onError($event)"
+ *   (videoRecorded)="onVideo($event)">
+ *  </video>
+ * ```
+ *
  * in your component.ts
  *
  * ```ts
@@ -63,8 +74,19 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     /**
      * mediaStream config is using [MediaStreamConstraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints)
      */
-    @Input()
-    public mediaStream: MediaStreamConstraints;
+    // tslint:disable-next-line: no-input-rename
+    @Input('mediaStream')
+    public config: MediaStreamConstraints;
+
+    /**
+     * DOMException - MediaStream has no perm to start
+     * ReferenceError - MediaRecorder is not available on browser
+     */
+    @Output()
+    public intitError: EventEmitter<DOMException | ReferenceError> = new EventEmitter();
+
+    @Output()
+    public mediaStreamRef: EventEmitter<MediaStream> = new EventEmitter();
 
     @Output()
     public videoRecorded: EventEmitter<[Blob, ArrayBuffer]> = new EventEmitter();
@@ -72,7 +94,7 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
     private readonly document: Document = document;
     private mediaRecorder: MediaRecorder;
-    private mStream: MediaStream;
+    private mediaStream: MediaStream;
 
     constructor(elRef: ElementRef) {
         super(elRef);
@@ -85,16 +107,24 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     }
 
     public play(): void {
-        if (!this.mStream) {
+        if (!this.mediaStream) {
             // No need to cancel subscription because when finish it's also completed
-            this.userMediaObs(this.mediaStream).subscribe(stream => { // TODO: verify obs completed and add note
-                this.mStream = stream;
-                this.play();
-            });
+            this.userMediaObs(this.config)
+                .pipe(
+                    catchError(err => {
+                        this.intitError.emit(err);
+                        return EMPTY;
+                    })
+                )
+                .subscribe(stream => {
+                    this.mediaStream = stream;
+                    this.mediaStreamRef.emit(this.mediaStream);
+                    this.play();
+                });
             return;
         }
         if (!this.element.srcObject) {
-            this.element.srcObject = this.mStream;
+            this.element.srcObject = this.mediaStream;
         }
         this.element.play();
     }
@@ -104,9 +134,12 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     }
 
     public stop(): void {
+        if (!this.mediaStream) {
+            return;
+        }
         // Stop camera devices streaming
-        this.mStream.getTracks().forEach(track => track.stop());
-        this.mStream = null;
+        this.mediaStream.getTracks().forEach(track => track.stop());
+        this.mediaStream = null;
         this.element.pause();
         this.element.srcObject = null;
     }
@@ -135,13 +168,16 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
      * (MediaRecorder)[https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder]
      * (FileReader)[https://developer.mozilla.org/en-US/docs/Web/API/FileReader]
      */
-    public recordStart(): void | never {
-        if (this.mediaRecorder) {
+    public recordStart(): void {
+        if (this.mediaRecorder || !this.mediaStream) {
             return;
         }
 
-        // If API is not available this will throw an error
-        this.mediaRecorder = new MediaRecorder(this.mStream);
+        try {
+            this.mediaRecorder = new MediaRecorder(this.mediaStream);
+        } catch (err) {
+            this.intitError.emit(err);
+        }
 
         this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
             const blob = event.data;
@@ -173,7 +209,3 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
         }));
     }
 }
-
-    // TODO: Expose mediaStream or make it public
-    // TODO: expose errors from mediaStream and mediaRecorder (explain it well)
-    // TODO: check perm change - debug what happend with media stream
