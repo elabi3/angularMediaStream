@@ -46,16 +46,6 @@ export class HTMLVideoDirective {
  *   <video autoplay mediaStream></video>
  * ```
  *
- * or
- *
- * ```html
- *  <video
- *   [mediaStream]="{video: true}"
- *   (intitError)="onError($event)"
- *   (videoRecorded)="onVideo($event)">
- *  </video>
- * ```
- *
  * in your component.ts
  *
  * ```ts
@@ -72,9 +62,8 @@ export class HTMLVideoDirective {
 export class MediaStreamDirective extends HTMLVideoDirective implements AfterViewInit {
 
     /**
-     * mediaStream config is using [MediaStreamConstraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints)
+     * config is using [MediaStreamConstraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints)
      */
-    // tslint:disable-next-line: no-input-rename
     @Input('mediaStream')
     public config: MediaStreamConstraints;
 
@@ -163,8 +152,7 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     }
 
     /**
-     * This meethod is using a couple of native APIs:
-     *
+     * This method is using a couple of native APIs:
      * (MediaRecorder)[https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder]
      * (FileReader)[https://developer.mozilla.org/en-US/docs/Web/API/FileReader]
      */
@@ -172,13 +160,11 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
         if (this.mediaRecorder || !this.mediaStream) {
             return;
         }
-
         try {
             this.mediaRecorder = new MediaRecorder(this.mediaStream);
         } catch (err) {
             this.intitError.emit(err);
         }
-
         this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
             const blob = event.data;
             if (blob?.size <= 0) {
@@ -186,7 +172,6 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
             }
             const reader = new FileReader();
             reader.onloadend = () => {
-                // The contents of the BLOB are in reader.result:
                 this.videoRecorded.emit([blob, reader.result as ArrayBuffer]);
             };
             reader.readAsArrayBuffer(blob);
@@ -203,8 +188,7 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
 
     private userMediaObs(config: MediaStreamConstraints): Observable<MediaStream> {
         return from(this.mediaDevices.getUserMedia({
-            // Default config in case nothing is provided
-            ...{ video: true, audio: false },
+            ...{ video: true, audio: false }, // Default config in case nothing is provided
             ...config
         }));
     }
