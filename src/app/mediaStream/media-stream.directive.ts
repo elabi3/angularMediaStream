@@ -1,4 +1,4 @@
-import { AfterViewInit, Directive, ElementRef, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, EventEmitter, Input, NgZone, Output } from '@angular/core';
 import { EMPTY, from, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -78,14 +78,14 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     public mediaStreamRef: EventEmitter<MediaStream> = new EventEmitter();
 
     @Output()
-    public videoRecorded: EventEmitter<[Blob, ArrayBuffer]> = new EventEmitter();
+    public videoRecorded: EventEmitter<Blob> = new EventEmitter();
 
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
     private readonly document: Document = document;
     private mediaRecorder: MediaRecorder;
     private mediaStream: MediaStream;
 
-    constructor(elRef: ElementRef) {
+    constructor(elRef: ElementRef, private ngZone: NgZone) {
         super(elRef);
     }
 
@@ -163,20 +163,15 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
         }
         this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
             const blob = event.data;
-            if (blob?.size <= 0) {
-                return;
+            if (blob?.size > 0) {
+                this.ngZone.run(() => this.videoRecorded.emit(blob));
             }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                this.videoRecorded.emit([blob, reader.result as ArrayBuffer]);
-            };
-            reader.readAsArrayBuffer(blob);
         };
         this.mediaRecorder.start();
     }
 
     public recordStop(): void {
-        if (!this.mediaRecorder) {
+        if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
             return;
         }
         this.mediaRecorder.stop(); // Fires ondataavailable's event

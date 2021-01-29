@@ -5,7 +5,7 @@
 <video
   class="video-container"
   playsinline
-  [mediaStream]="{video: true}"
+  [mediaStream]="{ video: true }"
   (intitError)="onError($event)"
   (videoRecorded)="onVideo($event)"
 >
@@ -15,14 +15,19 @@
   <button (click)="mediaStream.play()">Start</button>
   <button (click)="mediaStream.pause()">Pause</button>
   <button (click)="mediaStream.stop()">Stop</button>
-  <button (click)="picSrc = mediaStream.take()">Take</button>
-  <button (click)="record()">Record Start</button>
+  <button (click)="onPic()">Take</button>
+  <button (click)="mediaStream.recordStart()">Record Start</button>
   <button (click)="mediaStream.recordStop()">Record Stop</button>
 </div>
 
-<hr />
-<h2>Pic Result</h2>
-<img [src]="picSrc" />
+<ng-container *ngIf="picSrc">
+  <hr />
+  <h2>Pic Result</h2>
+  <img [src]="picSrc" />
+</ng-container>
 
-<hr />
-<h2>Video Result</h2>
+<ng-container *ngIf="videoSrc">
+  <hr />
+  <h2>Video Result</h2>
+  <video controls class="video-container" [src]="videoSrc"></video>
+</ng-container>

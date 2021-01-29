@@ -1,4 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MediaStreamDirective } from './mediaStream/media-stream.directive';
 
 @Component({
@@ -12,15 +13,16 @@ export class AppComponent {
   public mediaStream: MediaStreamDirective;
 
   public picSrc: string;
+  public videoSrc: SafeUrl;
 
-  constructor() { }
+  constructor(private sanitaze: DomSanitizer) { }
 
-  public record(): void {
-    this.mediaStream.recordStart();
+  public onPic(): void {
+    this.picSrc = this.mediaStream.take();
   }
 
-  public onVideo(data: [Blob, ArrayBuffer]): void {
-    console.log(data);
+  public onVideo(data: Blob): void {
+    this.videoSrc = this.sanitaze.bypassSecurityTrustUrl(URL.createObjectURL(data));
   }
 
   public onError(err: DOMException | ReferenceError): void {
@@ -30,8 +32,7 @@ export class AppComponent {
       alert('Impossible to instanciate MediaRecorder' + err);
     }
   }
-
 }
 
-// TODO: add demo video player
-// TODO: check rebase
+// TODO: rebase code
+// TODO: add readme & improve github code refs
