@@ -2,8 +2,8 @@ import { AfterViewInit, Directive, ElementRef, EventEmitter, Input, NgZone, Outp
 import { EMPTY, from, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-// Uncoment this line if you're not using @types/dom-mediacapture-record
-// declare const MediaRecorder: any;
+// Comment this line if you're using @types/dom-mediacapture-record
+declare const MediaRecorder: any;
 
 /**
  * Wraps access to [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) :
@@ -82,7 +82,7 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
 
     private readonly mediaDevices: MediaDevices = navigator.mediaDevices;
     private readonly document: Document = document;
-    private mediaRecorder: MediaRecorder;
+    private mediaRecorder: typeof MediaRecorder;
     private mediaStream: MediaStream;
 
     constructor(elRef: ElementRef, private ngZone: NgZone) {
@@ -161,7 +161,7 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
         } catch (err) {
             this.intitError.emit(err);
         }
-        this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
+        this.mediaRecorder.ondataavailable = event => {
             const blob = event.data;
             if (blob?.size > 0) {
                 this.ngZone.run(() => this.videoRecorded.emit(blob));
