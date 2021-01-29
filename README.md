@@ -2,6 +2,8 @@
 
 This project contains a demo of how to use MediaStream API in an Angular App. Working on Desktop, mobile & tablet. 
 
+- Live preview: https://elabi3.github.io/angularMediaStream/
+
 # How to run 
 
 ```
@@ -9,8 +11,6 @@ git clone https://github.com/elabi3/angularMediaStream.git
 npm run install
 npm run start
 ```
-
-Live preview: https://elabi3.github.io/angularMediaStream/
 
 # Using it on your project
 
