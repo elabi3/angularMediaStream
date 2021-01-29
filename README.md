@@ -184,9 +184,8 @@ export class MediaStreamDirective extends HTMLVideoDirective implements AfterVie
     }
 
     /**
-     * This method is using a couple of native APIs:
+     * This method is using a native APIs:
      * (MediaRecorder)[https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder]
-     * (FileReader)[https://developer.mozilla.org/en-US/docs/Web/API/FileReader]
      */
     public recordStart(): void {
         if (this.mediaRecorder || !this.mediaStream) {
