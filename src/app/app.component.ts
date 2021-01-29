@@ -33,6 +33,3 @@ export class AppComponent {
     }
   }
 }
-
-// TODO: rebase code
-// TODO: add readme & improve github code refs
